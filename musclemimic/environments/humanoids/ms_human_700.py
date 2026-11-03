@@ -7,6 +7,7 @@ pelvis (3 slides + 3 hinges) to free-joint conversion that trajectories need.
 
 import os
 
+from loco_mujoco.core.utils import info_property
 from mujoco import MjSpec
 
 from musclemimic.environments.humanoids import ms_human_700_root as root
@@ -46,6 +47,13 @@ class MsHuman700MyoFullBody(MyoFullBody):
         self.pelvis_body_pos, self.pelvis_body_quat = root.prepare_spec(spec, self.body2sites_for_mimic, self.root_free_joint_xml_name)
         return spec
 
+    def _modify_spec_for_mjx(self, spec: MjSpec) -> MjSpec:
+        """Keep every contact. MyoFullBody zeroes contype and conaffinity on all geoms but the floor for the non-Warp MJX backend;
+        that removes the feet's contact with the floor and the body's self contacts, so MS-Human-700 only applies the Warp limits."""
+        if getattr(self, "mjx_backend", None) == "warp":
+            return super()._modify_spec_for_mjx(spec)
+        return spec
+
     @classmethod
     def get_default_xml_file_path(cls) -> str:
         path = os.environ.get("MSH700_XML")
@@ -53,15 +61,15 @@ class MsHuman700MyoFullBody(MyoFullBody):
             raise FileNotFoundError("set MSH700_XML to MS-Human-700.xml (MuJoCo Menagerie ms_human_700) or pass spec=")
         return path
 
-    @property
+    @info_property
     def upper_body_xml_name(self) -> str:
         return "lumbar1"
 
-    @property
+    @info_property
     def root_height_healthy_range(self) -> tuple[float, float]:
         return HEALTHY_ROOT_HEIGHT
 
-    @property
+    @info_property
     def body2sites_for_mimic(self) -> dict[str, str]:
         return BODY2SITES_FOR_MIMIC
 
