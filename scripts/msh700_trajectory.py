@@ -29,7 +29,7 @@ def free_model(xml):
     pos, quat = np.array(pelvis.pos), np.array(pelvis.quat)
     for n in root.PELVIS_JOINTS:
         spec.delete(spec.joint(n))
-    pelvis.add_freejoint()
+    pelvis.add_freejoint().name = "root"
     return spec.compile(), pos, quat
 
 
