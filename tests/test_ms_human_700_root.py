@@ -20,7 +20,9 @@ _s.loader.exec_module(_m)
 PELVIS_JOINTS, root_to_freejoint = _m.PELVIS_JOINTS, _m.root_to_freejoint
 
 XML = os.environ.get("MSH700_XML")
-pytestmark = pytest.mark.skipif(not XML, reason="set MSH700_XML")
+if not XML:
+    # A skipped gate is a false pass: refuse to collect instead of skipping.
+    raise RuntimeError("MSH700_XML must point at MS-Human-700.xml; this test does not skip")
 
 
 def _free_model():
